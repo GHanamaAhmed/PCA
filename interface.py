@@ -9,6 +9,8 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 from pandas.api.types import is_string_dtype
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue")
@@ -70,6 +72,18 @@ class App(customtkinter.CTk):
         # Configure bottom frame grid
         self.bottom_frame.grid_columnconfigure((0, 1), weight=1)  # Equal width columns
         
+
+        # Create left and right frames inside the bottom frame
+        self.left_bottom_frame = customtkinter.CTkFrame(self.bottom_frame)
+        self.left_bottom_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        self.right_bottom_frame = customtkinter.CTkFrame(self.bottom_frame)
+        self.right_bottom_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        # Configure grid weights for left_bottom_frame
+        self.left_bottom_frame.grid_columnconfigure(0, weight=1)
+        self.left_bottom_frame.grid_columnconfigure(1, weight=1)
+
         # set default values
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
@@ -118,17 +132,17 @@ class App(customtkinter.CTk):
 
         self.scatter_columns = columns
 
-        self.scatter_column1_label = customtkinter.CTkLabel(self.bottom_frame, text="X-axis:")
-        self.scatter_column1_label.grid(row=0, column=0, padx=10, pady=5)
+        self.scatter_column1_label = customtkinter.CTkLabel(self.left_bottom_frame, text="X-axis:")
+        self.scatter_column1_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
 
-        self.scatter_column1_dropdown = customtkinter.CTkOptionMenu(self.bottom_frame, values=self.scatter_columns)
-        self.scatter_column1_dropdown.grid(row=1, column=0, padx=10, pady=5)
+        self.scatter_column1_dropdown = customtkinter.CTkOptionMenu(self.left_bottom_frame, values=self.scatter_columns)
+        self.scatter_column1_dropdown.grid(row=3, column=0, padx=10, pady=5, sticky="w")
 
-        self.scatter_column2_label = customtkinter.CTkLabel(self.bottom_frame, text="Y-axis:")
-        self.scatter_column2_label.grid(row=0, column=1, padx=10, pady=5)
+        self.scatter_column2_label = customtkinter.CTkLabel(self.left_bottom_frame, text="Y-axis:")
+        self.scatter_column2_label.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
-        self.scatter_column2_dropdown = customtkinter.CTkOptionMenu(self.bottom_frame, values=self.scatter_columns)
-        self.scatter_column2_dropdown.grid(row=1, column=1, padx=10, pady=5)
+        self.scatter_column2_dropdown = customtkinter.CTkOptionMenu(self.left_bottom_frame, values=self.scatter_columns)
+        self.scatter_column2_dropdown.grid(row=3, column=1, padx=10, pady=5, sticky="w")
 
     def create_pca_component_input(self):
         # Remove old PCA input if exists
@@ -144,26 +158,26 @@ class App(customtkinter.CTk):
             self.feature_checkboxes_frame.destroy()
 
         # Label for PCA Components
-        self.pca_components_label = customtkinter.CTkLabel(self.bottom_frame, text="Number of Principal Components:")
-        self.pca_components_label.grid(row=2, column=0, columnspan=2, padx=10, pady=5, sticky="w")
+        self.pca_components_label = customtkinter.CTkLabel(self.left_bottom_frame, text="Number of Principal Components:")
+        self.pca_components_label.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="w")
 
         # Entry for Number of Components
-        self.pca_components_input = customtkinter.CTkEntry(self.bottom_frame)
-        self.pca_components_input.grid(row=3, column=0, padx=10, pady=5, sticky="w")
+        self.pca_components_input = customtkinter.CTkEntry(self.left_bottom_frame)
+        self.pca_components_input.grid(row=5, column=0, padx=10, pady=5, sticky="w")
 
-        self.pca_components_types_label = customtkinter.CTkLabel(self.bottom_frame, text="Categories filed:")
-        self.pca_components_types_label.grid(row=2, column=1, padx=10, pady=5)
+        self.pca_components_types_label = customtkinter.CTkLabel(self.left_bottom_frame, text="Categories filed:")
+        self.pca_components_types_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
         columns = self.df.columns.tolist()
         self.scatter_columns_str = columns
         columns = [col for col in columns if is_string_dtype(self.df[col])]
 
-        self.pca_components_types_dropDown = customtkinter.CTkOptionMenu(self.bottom_frame, values=columns)
-        self.pca_components_types_dropDown.grid(row=3, column=1, padx=10, pady=5)
+        self.pca_components_types_dropDown = customtkinter.CTkOptionMenu(self.left_bottom_frame, values=columns)
+        self.pca_components_types_dropDown.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
         # Frame for Checkboxes
-        self.feature_checkboxes_frame = customtkinter.CTkFrame(self.bottom_frame)
-        self.feature_checkboxes_frame.grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        self.feature_checkboxes_frame = customtkinter.CTkFrame(self.left_bottom_frame)
+        self.feature_checkboxes_frame.grid(row=6, column=0, padx=10, pady=5, sticky="w")
         
         # Dynamically create checkboxes for numerical features
         self.feature_checkboxes = {}
@@ -181,13 +195,28 @@ class App(customtkinter.CTk):
         if self.df is not None:
             x_column = self.scatter_column1_dropdown.get()
             y_column = self.scatter_column2_dropdown.get()
-            
+
             if x_column and y_column:
-                plt.scatter(self.df[x_column], self.df[y_column])
-                plt.title(f"Scatter Plot: {x_column} vs {y_column}")
-                plt.xlabel(x_column)
-                plt.ylabel(y_column)
-                plt.show()
+                # Clear previous plot
+                for widget in self.right_bottom_frame.winfo_children():
+                    widget.destroy()
+
+                # Create a matplotlib figure
+                fig = Figure(figsize=(4, 4), dpi=100)
+                ax = fig.add_subplot(111)
+                for types in self.df[self.pca_components_types_dropDown.get()].unique():
+                    subset=self.df[self.df[self.pca_components_types_dropDown.get()]==types]
+                    ax.scatter(subset[x_column], subset[y_column],label=types)
+                ax.set_title(f"Scatter Plot: {x_column} vs {y_column}")
+                ax.set_xlabel(x_column)
+                ax.set_ylabel(y_column)
+
+                # Embed the figure in Tkinter
+                canvas = FigureCanvasTkAgg(fig, master=self.right_bottom_frame)
+                canvas_widget = canvas.get_tk_widget()
+                canvas_widget.pack(fill="both", expand=True)
+                canvas.draw()
+
 
     def plot_pairplot(self):
         if self.df is not None:
@@ -197,6 +226,10 @@ class App(customtkinter.CTk):
 
     def plot_pca(self):
         if self.df is not None:
+            # Clear previous plot
+            for widget in self.right_bottom_frame.winfo_children():
+                widget.destroy()
+
             selected_features = [col for col, var in self.feature_checkboxes.items() if var.get()]
             if not selected_features:
                 tkinter.messagebox.showwarning("Warning", "Please select at least one feature for PCA.")
@@ -209,6 +242,7 @@ class App(customtkinter.CTk):
             if x.empty:
                 tkinter.messagebox.showwarning("Warning", "All selected rows have missing values. Please check your data.")
                 return
+            
             scaler = StandardScaler()
             x_scaled = scaler.fit_transform(x)
     
@@ -217,13 +251,20 @@ class App(customtkinter.CTk):
 
             pca_df = pd.DataFrame(x_pca, columns=[f"PC{i+1}" for i in range(n_components)])
             pca_df[self.pca_components_types_dropDown.get()]=  self.df[self.pca_components_types_dropDown.get()]
+            # Create a matplotlib figure
+            fig = Figure(figsize=(4, 4), dpi=100)
+            ax = fig.add_subplot(111)
             for spices in pca_df[self.pca_components_types_dropDown.get()].unique():
                 subset=pca_df[pca_df[self.pca_components_types_dropDown.get()]==spices]
-                plt.scatter(subset["PC1"],subset["PC2"],label=spices)
-            plt.title(f"PCA with {n_components} Components")
-            plt.xlabel("PC1")
-            plt.ylabel("PC2")
-            plt.show()
+                ax.scatter(subset["PC1"],subset["PC2"],label=spices)
+            ax.set_title(f"PCA with {n_components} Components")
+            ax.set_xlabel("PC1")
+            ax.set_ylabel("PC2")
+            # Embed the figure in Tkinter
+            canvas = FigureCanvasTkAgg(fig, master=self.right_bottom_frame)
+            canvas_widget = canvas.get_tk_widget()
+            canvas_widget.pack(fill="both", expand=True)
+            canvas.draw()
 
 
 if __name__ == "__main__":
